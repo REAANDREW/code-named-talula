@@ -6,7 +6,9 @@ This is a little project looking into how to create a simple proxy in GOLANG whi
 
 **XML** via XSLT Engine using the native libxslt
 
+## Running the tests
 
-
-
+```shell
+make test
+```
 
