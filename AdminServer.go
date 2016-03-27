@@ -27,7 +27,7 @@ func StartAdminServer() {
 		response := APIResponse{
 			Links: []Link{
 				Link{
-					Href:   fmt.Sprintf("http://localhost:38765/endpoints/%s/transforms/response", newEndpoint.ID),
+					Href:   AdminURL("/endpoints/%s/transforms/response", newEndpoint.ID),
 					Method: "PUT",
 					Rel:    "set_response_transform",
 				},
