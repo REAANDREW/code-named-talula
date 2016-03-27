@@ -61,5 +61,5 @@ func StartAdminServer() {
 		c.Status(201)
 	})
 
-	AdminServer.Run("localhost:38765")
+	AdminServer.Run(fmt.Sprintf("%s:%d", Host, AdminPort))
 }
