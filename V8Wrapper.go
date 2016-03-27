@@ -12,6 +12,17 @@ var (
 	V8Worker *v8worker.Worker
 )
 
+func loadLodash(worker *v8worker.Worker) {
+	lodashLib, err := ioutil.ReadFile("./scripts/lodash.core.min.js")
+	if err != nil {
+		panic(err)
+	}
+	worker.Load("lodash.js", fmt.Sprintf(`
+					    %s
+					    var _ = this._;
+					    `, string(lodashLib)))
+}
+
 //StartV8Worker ...
 func StartV8Worker() {
 	V8Worker = v8worker.New(func(msg string) {
@@ -20,17 +31,9 @@ func StartV8Worker() {
 	}, func(msg string) string {
 		output := fmt.Sprintf("got message sync %s", msg)
 		fmt.Println(output)
-		//return msg
-		return "BANG BOOM POW"
+		return msg
 	})
-	lodashLib, err := ioutil.ReadFile("./scripts/lodash.core.min.js")
-	if err != nil {
-		panic(err)
-	}
-	V8Worker.Load("lodash.js", fmt.Sprintf(`
-					    %s
-					    var _ = this._;
-					    `, string(lodashLib)))
+	loadLodash(V8Worker)
 
 	V8Worker.Load("transform.js", `$recvSync(function(msg) {
                     var obj = JSON.parse(msg);
