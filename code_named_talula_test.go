@@ -7,9 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os/exec"
-	"path/filepath"
-	"time"
 
 	"github.com/guzzlerio/rizo"
 
@@ -49,53 +46,6 @@ var _ = Describe("CodeNamedTalula", func() {
 		})
 
 		TestServer.Use(factory).For(rizo.RequestWithPath("/people"))
-
-		/* Start the application listening */
-
-		exePath, err := filepath.Abs("./code-named-talula")
-		if err != nil {
-			panic(err)
-		}
-
-		cmd := exec.Command(exePath)
-		stdout, err := cmd.StdoutPipe()
-		Expect(err).To(BeNil())
-		stderr, err := cmd.StderrPipe()
-		Expect(err).To(BeNil())
-		defer func() {
-			cmd.Process.Kill()
-
-			stdoutOutput, err := ioutil.ReadAll(stdout)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("-----------STDOUT")
-			fmt.Println(string(stdoutOutput))
-
-			stderrOutput, err := ioutil.ReadAll(stderr)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("-----------STDERR")
-			fmt.Println(string(stderrOutput))
-		}()
-
-		if err != nil {
-			panic(err)
-		}
-
-		cmd.Start()
-		time.Sleep(time.Second * 1)
-
-		/*
-		   Configure the application to:
-		   - proxy traffic for path http://localhost:3000/people to http://localhost:4000/people
-		   - transform the response so that it returns
-		     {
-		       "name" : "John Doe",
-		       "age" : 33
-		     }
-		*/
 
 		client := &http.Client{}
 		bodyString := []byte(fmt.Sprintf(`{
