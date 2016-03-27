@@ -31,6 +31,10 @@ func findLinkByRel(rel string, links []Link) LinkResult {
 	return result
 }
 
+var (
+	testPort = 4000
+)
+
 var _ = Describe("CodeNamedTalula", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
@@ -39,17 +43,6 @@ var _ = Describe("CodeNamedTalula", func() {
 	PIt("Creating a response transform with an ID that does not exist returns a NotFound", func() {})
 
 	It("Transforms a JSON response", func() {
-		/*
-		   Setup a test http server on port 4000 which will return a JSON response of
-		   {
-		        "first name" : "John",
-		        "last name" : "Doe",
-		        "age" : 33
-		    }
-		*/
-
-		testPort := 4000
-		testServer := rizo.CreateRequestRecordingServer(testPort)
 
 		factory := rizo.HTTPResponseFactory(func(w http.ResponseWriter) {
 			io.WriteString(w, `{
@@ -59,11 +52,7 @@ var _ = Describe("CodeNamedTalula", func() {
       }`)
 		})
 
-		testServer.Use(factory).For(rizo.RequestWithPath("/people"))
-		testServer.Start()
-		defer func() {
-			testServer.Stop()
-		}()
+		TestServer.Use(factory).For(rizo.RequestWithPath("/people"))
 
 		/* Start the application listening */
 
