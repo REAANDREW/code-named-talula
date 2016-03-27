@@ -26,6 +26,7 @@ func main() {
 	}()
 
 	StartV8Worker()
+	defer CleanUpV8Worker()
 
 	go StartAdminServer()
 
