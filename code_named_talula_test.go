@@ -28,6 +28,22 @@ func findLinkByRel(rel string, links []Link) LinkResult {
 	return result
 }
 
+func CreateEndpoint(client *http.Client, data string) APIResponse {
+	buffer := bytes.NewBuffer([]byte(data))
+	endpointRequest, err := http.NewRequest("POST", AdminURL("/endpoints"), buffer)
+	Expect(err).To(BeNil())
+	scriptResponse, err := client.Do(endpointRequest)
+	Expect(err).To(BeNil())
+	Expect(scriptResponse.StatusCode).To(Equal(http.StatusCreated))
+	defer scriptResponse.Body.Close()
+	endpointResponseBody, err := ioutil.ReadAll(scriptResponse.Body)
+	Expect(err).To(BeNil())
+	var apiResponse APIResponse
+	err = json.Unmarshal(endpointResponseBody, &apiResponse)
+	Expect(err).To(BeNil())
+	return apiResponse
+}
+
 var _ = Describe("CodeNamedTalula", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
@@ -48,21 +64,10 @@ var _ = Describe("CodeNamedTalula", func() {
 		TestServer.Use(factory).For(rizo.RequestWithPath("/people"))
 
 		client := &http.Client{}
-		bodyString := []byte(fmt.Sprintf(`{
+		apiResponse := CreateEndpoint(client, fmt.Sprintf(`{
       "destination" : "http://%s:%d",
       "path" : "/people"
     }`, Host, TestServerPort))
-		endpointRequest, err := http.NewRequest("POST", AdminURL("/endpoints"), bytes.NewBuffer(bodyString))
-		Expect(err).To(BeNil())
-		scriptResponse, err := client.Do(endpointRequest)
-		Expect(err).To(BeNil())
-		Expect(scriptResponse.StatusCode).To(Equal(http.StatusCreated))
-		defer scriptResponse.Body.Close()
-		endpointResponseBody, err := ioutil.ReadAll(scriptResponse.Body)
-		Expect(err).To(BeNil())
-		var apiResponse APIResponse
-		err = json.Unmarshal(endpointResponseBody, &apiResponse)
-		Expect(err).To(BeNil())
 
 		fmt.Printf("Response %v \n", apiResponse)
 		findResult := findLinkByRel("set_response_transform", apiResponse.Links)
