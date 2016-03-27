@@ -22,7 +22,6 @@ import (
 func findLinkByRel(rel string, links []Link) LinkResult {
 	var result = LinkResult{}
 	for _, link := range links {
-		fmt.Printf("LINK: %v \n", link)
 		if link.Rel == rel {
 			result.Found = true
 			result.Result = link
@@ -49,7 +48,8 @@ var _ = Describe("CodeNamedTalula", func() {
 		    }
 		*/
 
-		testServer := rizo.CreateRequestRecordingServer(4000)
+		testPort := 4000
+		testServer := rizo.CreateRequestRecordingServer(testPort)
 
 		factory := rizo.HTTPResponseFactory(func(w http.ResponseWriter) {
 			io.WriteString(w, `{
@@ -65,7 +65,7 @@ var _ = Describe("CodeNamedTalula", func() {
 			testServer.Stop()
 		}()
 
-		/* Start the application listening on port 3000 */
+		/* Start the application listening */
 
 		exePath, err := filepath.Abs("./code-named-talula")
 		if err != nil {
@@ -113,11 +113,11 @@ var _ = Describe("CodeNamedTalula", func() {
 		*/
 
 		client := &http.Client{}
-		bodyString := []byte(`{
-      "destination" : "http://localhost:4000",
+		bodyString := []byte(fmt.Sprintf(`{
+      "destination" : "http://%s:%d",
       "path" : "/people"
-    }`)
-		endpointRequest, err := http.NewRequest("POST", "http://localhost:38765/endpoints", bytes.NewBuffer(bodyString))
+    }`, Host, testPort))
+		endpointRequest, err := http.NewRequest("POST", AdminURL("/endpoints"), bytes.NewBuffer(bodyString))
 		Expect(err).To(BeNil())
 		scriptResponse, err := client.Do(endpointRequest)
 		Expect(err).To(BeNil())
@@ -148,7 +148,7 @@ var _ = Describe("CodeNamedTalula", func() {
 		Expect(transformResponse.StatusCode).To(Equal(http.StatusCreated))
 
 		//Craft a GET request to the proxy for /people
-		getPeopleRequest, err := http.NewRequest("GET", "http://localhost:39765/people", nil)
+		getPeopleRequest, err := http.NewRequest("GET", TransformURL("/people"), nil)
 		Expect(err).To(BeNil())
 		getPeopleResponse, err := client.Do(getPeopleRequest)
 		Expect(err).To(BeNil())

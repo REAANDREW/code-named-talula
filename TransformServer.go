@@ -53,5 +53,5 @@ func StartTransformServer() {
 			}
 		}
 	})
-	TransformServer.Run("localhost:39765")
+	TransformServer.Run(fmt.Sprintf("%s:%d", Host, ProxyPort))
 }
