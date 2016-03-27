@@ -31,10 +31,6 @@ func findLinkByRel(rel string, links []Link) LinkResult {
 	return result
 }
 
-var (
-	testPort = 4000
-)
-
 var _ = Describe("CodeNamedTalula", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
@@ -105,7 +101,7 @@ var _ = Describe("CodeNamedTalula", func() {
 		bodyString := []byte(fmt.Sprintf(`{
       "destination" : "http://%s:%d",
       "path" : "/people"
-    }`, Host, testPort))
+    }`, Host, TestServerPort))
 		endpointRequest, err := http.NewRequest("POST", AdminURL("/endpoints"), bytes.NewBuffer(bodyString))
 		Expect(err).To(BeNil())
 		scriptResponse, err := client.Do(endpointRequest)
