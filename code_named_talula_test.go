@@ -64,6 +64,22 @@ func CreateResponseTransform(client *http.Client, data string, links []Link) API
 	return apiResponse
 }
 
+func GetJSON(client *http.Client, url string) map[string]interface{} {
+	//Craft a GET request to the proxy for /people
+	getRequest, err := http.NewRequest("GET", url, nil)
+	Expect(err).To(BeNil())
+	getResponse, err := client.Do(getRequest)
+	Expect(err).To(BeNil())
+	defer getResponse.Body.Close()
+	getResponseContent, err := ioutil.ReadAll(getResponse.Body)
+
+	var jsonResponse map[string]interface{}
+	jsonResponseError := json.Unmarshal(getResponseContent, &jsonResponse)
+	Expect(jsonResponseError).To(BeNil())
+	Expect(getResponse.StatusCode).To(Equal(http.StatusOK))
+	return jsonResponse
+}
+
 var _ = Describe("CodeNamedTalula", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
@@ -84,6 +100,7 @@ var _ = Describe("CodeNamedTalula", func() {
 		TestServer.Use(factory).For(rizo.RequestWithPath("/people"))
 
 		client := &http.Client{}
+
 		endpointAPIResponse := CreateEndpoint(client, fmt.Sprintf(`{
       "destination" : "http://%s:%d",
       "path" : "/people"
@@ -96,19 +113,8 @@ var _ = Describe("CodeNamedTalula", func() {
 				      }
 				    }`, endpointAPIResponse.Links)
 
-		//Craft a GET request to the proxy for /people
-		getPeopleRequest, err := http.NewRequest("GET", TransformURL("/people"), nil)
-		Expect(err).To(BeNil())
-		getPeopleResponse, err := client.Do(getPeopleRequest)
-		Expect(err).To(BeNil())
-		defer getPeopleResponse.Body.Close()
-		getPeopleResponseContent, err := ioutil.ReadAll(getPeopleResponse.Body)
+		jsonResponse := GetJSON(client, TransformURL("/people"))
 
-		var jsonResponse map[string]interface{}
-		jsonResponseError := json.Unmarshal(getPeopleResponseContent, &jsonResponse)
-
-		Expect(jsonResponseError).To(BeNil())
-		Expect(getPeopleResponse.StatusCode).To(Equal(http.StatusOK))
 		Expect(jsonResponse["name"]).ToNot(BeNil())
 		Expect(jsonResponse["age"]).ToNot(BeNil())
 		Expect(string(jsonResponse["name"].(string))).To(Equal("John Doe"))
