@@ -16,18 +16,6 @@ import (
 	. "github.com/reaandrew/code-named-talula"
 )
 
-func findLinkByRel(rel string, links []Link) LinkResult {
-	var result = LinkResult{}
-	for _, link := range links {
-		if link.Rel == rel {
-			result.Found = true
-			result.Result = link
-			break
-		}
-	}
-	return result
-}
-
 func CreateEndpoint(client *http.Client, data string) APIResponse {
 	buffer := bytes.NewBuffer([]byte(data))
 	endpointRequest, err := http.NewRequest("POST", AdminURL("/endpoints"), buffer)
@@ -45,7 +33,7 @@ func CreateEndpoint(client *http.Client, data string) APIResponse {
 }
 
 func CreateResponseTransform(client *http.Client, data string, links []Link) APIResponse {
-	findResult := findLinkByRel("set_response_transform", links)
+	findResult := FindLinkByRel("set_response_transform", links)
 	Expect(findResult.Found).To(Equal(true))
 	createScriptLink := findResult.Result
 

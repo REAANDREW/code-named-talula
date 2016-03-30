@@ -9,6 +9,19 @@ type Link struct {
 	Href   string `json:"href"`
 }
 
+//FindLinkByRel ...
+func FindLinkByRel(rel string, links []Link) LinkResult {
+	var result = LinkResult{}
+	for _, link := range links {
+		if link.Rel == rel {
+			result.Found = true
+			result.Result = link
+			break
+		}
+	}
+	return result
+}
+
 //LinkResult ...
 type LinkResult struct {
 	Found  bool
