@@ -15,20 +15,36 @@ import (
 	. "github.com/reaandrew/code-named-talula"
 )
 
-func GetJSON(client *http.Client, url string) map[string]interface{} {
+type JSONResponse struct {
+	JSON       map[string]interface{}
+	StatusCode int
+}
+
+func GetJSON(client *http.Client, url string) (JSONResponse, error) {
 	//Craft a GET request to the proxy for /people
 	getRequest, err := http.NewRequest("GET", url, nil)
-	Expect(err).To(BeNil())
+	if err != nil {
+		return JSONResponse{}, err
+	}
 	getResponse, err := client.Do(getRequest)
-	Expect(err).To(BeNil())
+	if err != nil {
+		return JSONResponse{}, err
+	}
 	defer getResponse.Body.Close()
 	getResponseContent, err := ioutil.ReadAll(getResponse.Body)
+	if err != nil {
+		return JSONResponse{}, err
+	}
 
 	var jsonResponse map[string]interface{}
 	jsonResponseError := json.Unmarshal(getResponseContent, &jsonResponse)
-	Expect(jsonResponseError).To(BeNil())
-	Expect(getResponse.StatusCode).To(Equal(http.StatusOK))
-	return jsonResponse
+	if jsonResponseError != nil {
+		return JSONResponse{}, err
+	}
+	return JSONResponse{
+		JSON:       jsonResponse,
+		StatusCode: getResponse.StatusCode,
+	}, nil
 }
 
 var _ = Describe("CodeNamedTalula", func() {
@@ -64,12 +80,14 @@ var _ = Describe("CodeNamedTalula", func() {
 				      }
 				    }`, endpointAPIResponse.Links)
 
-		jsonResponse := GetJSON(client, TransformURL("/people"))
+		jsonResponse, err := GetJSON(client, TransformURL("/people"))
+		Expect(err).To(BeNil())
+		Expect(jsonResponse.StatusCode).To(Equal(http.StatusOK))
 
-		Expect(jsonResponse["name"]).ToNot(BeNil())
-		Expect(jsonResponse["age"]).ToNot(BeNil())
-		Expect(string(jsonResponse["name"].(string))).To(Equal("John Doe"))
-		Expect(jsonResponse["age"].(float64)).To(Equal(float64(33)))
+		Expect(jsonResponse.JSON["name"]).ToNot(BeNil())
+		Expect(jsonResponse.JSON["age"]).ToNot(BeNil())
+		Expect(string(jsonResponse.JSON["name"].(string))).To(Equal("John Doe"))
+		Expect(jsonResponse.JSON["age"].(float64)).To(Equal(float64(33)))
 
 	})
 })
