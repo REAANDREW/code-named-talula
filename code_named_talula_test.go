@@ -13,7 +13,7 @@ import (
 	. "github.com/reaandrew/code-named-talula"
 )
 
-var _ = Describe("CodeNamedTalula", func() {
+var _ = Describe("JSON Transform", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
 	PIt("Creating a response transform without an ID returns a BadRequest", func() {})
