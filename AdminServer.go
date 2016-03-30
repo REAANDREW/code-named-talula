@@ -58,7 +58,10 @@ func StartAdminServer() {
 		} else {
 			panic("Cannot find the endpoint with that UUID")
 		}
-		c.Status(201)
+		response := APIResponse{
+			Links: []Link{},
+		}
+		c.JSON(201, &response)
 	})
 
 	AdminServer.Run(fmt.Sprintf("%s:%d", Host, AdminPort))

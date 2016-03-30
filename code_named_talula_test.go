@@ -44,6 +44,26 @@ func CreateEndpoint(client *http.Client, data string) APIResponse {
 	return apiResponse
 }
 
+func CreateResponseTransform(client *http.Client, data string, links []Link) APIResponse {
+	findResult := findLinkByRel("set_response_transform", links)
+	Expect(findResult.Found).To(Equal(true))
+	createScriptLink := findResult.Result
+
+	//Add the transformation script
+	transformString := []byte(data)
+	transformRequest, err := http.NewRequest(createScriptLink.Method, createScriptLink.Href, bytes.NewBuffer(transformString))
+	Expect(err).To(BeNil())
+	transformResponse, err := client.Do(transformRequest)
+	Expect(err).To(BeNil())
+	Expect(transformResponse.StatusCode).To(Equal(http.StatusCreated))
+	defer transformResponse.Body.Close()
+	transformResponseBody, err := ioutil.ReadAll(transformResponse.Body)
+	var apiResponse APIResponse
+	err = json.Unmarshal(transformResponseBody, &apiResponse)
+	Expect(err).To(BeNil())
+	return apiResponse
+}
+
 var _ = Describe("CodeNamedTalula", func() {
 
 	PIt("Creating a response transform without a body returns a BadRequest", func() {})
@@ -64,28 +84,17 @@ var _ = Describe("CodeNamedTalula", func() {
 		TestServer.Use(factory).For(rizo.RequestWithPath("/people"))
 
 		client := &http.Client{}
-		apiResponse := CreateEndpoint(client, fmt.Sprintf(`{
+		endpointAPIResponse := CreateEndpoint(client, fmt.Sprintf(`{
       "destination" : "http://%s:%d",
       "path" : "/people"
     }`, Host, TestServerPort))
 
-		fmt.Printf("Response %v \n", apiResponse)
-		findResult := findLinkByRel("set_response_transform", apiResponse.Links)
-		Expect(findResult.Found).To(Equal(true))
-		createScriptLink := findResult.Result
-
-		//Add the transformation script
-		transformString := []byte(`function transform(body){
+		CreateResponseTransform(client, `function transform(body){
 				      return {
 				        name : body.firstname + " " + body.lastname,
 				        age : body.age
 				      }
-				    }`)
-		transformRequest, err := http.NewRequest(createScriptLink.Method, createScriptLink.Href, bytes.NewBuffer(transformString))
-		Expect(err).To(BeNil())
-		transformResponse, err := client.Do(transformRequest)
-		Expect(err).To(BeNil())
-		Expect(transformResponse.StatusCode).To(Equal(http.StatusCreated))
+				    }`, endpointAPIResponse.Links)
 
 		//Craft a GET request to the proxy for /people
 		getPeopleRequest, err := http.NewRequest("GET", TransformURL("/people"), nil)
