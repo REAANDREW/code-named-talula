@@ -1,10 +1,8 @@
 package main_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/guzzlerio/rizo"
@@ -14,38 +12,6 @@ import (
 
 	. "github.com/reaandrew/code-named-talula"
 )
-
-type JSONResponse struct {
-	JSON       map[string]interface{}
-	StatusCode int
-}
-
-func GetJSON(client *http.Client, url string) (JSONResponse, error) {
-	//Craft a GET request to the proxy for /people
-	getRequest, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return JSONResponse{}, err
-	}
-	getResponse, err := client.Do(getRequest)
-	if err != nil {
-		return JSONResponse{}, err
-	}
-	defer getResponse.Body.Close()
-	getResponseContent, err := ioutil.ReadAll(getResponse.Body)
-	if err != nil {
-		return JSONResponse{}, err
-	}
-
-	var jsonResponse map[string]interface{}
-	jsonResponseError := json.Unmarshal(getResponseContent, &jsonResponse)
-	if jsonResponseError != nil {
-		return JSONResponse{}, err
-	}
-	return JSONResponse{
-		JSON:       jsonResponse,
-		StatusCode: getResponse.StatusCode,
-	}, nil
-}
 
 var _ = Describe("CodeNamedTalula", func() {
 
