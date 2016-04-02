@@ -58,7 +58,6 @@ func StartTransformServer() {
         }`, SafeUUID(endpoint.ID), string(proxyResponseBody))
 
 				result := V8Worker.SendSync(command)
-				fmt.Println(result)
 				c.Data(proxyResponse.StatusCode, proxyResponse.Header.Get("Content-Type"), []byte(result))
 			}
 		}

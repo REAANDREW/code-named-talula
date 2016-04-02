@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/satori/go.uuid"
@@ -59,7 +58,7 @@ func StartAdminServer() {
 			scriptName := fmt.Sprintf("transform_%s", SafeUUID(uuidValue))
 			toLoad := fmt.Sprintf(`var %s = %s`, scriptName, string(payload))
 			V8Worker.Load(scriptName, toLoad)
-			time.Sleep(1 * time.Second)
+			//			time.Sleep(1 * time.Second)
 		} else {
 			panic("Cannot find the endpoint with that UUID")
 		}
