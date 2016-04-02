@@ -5,7 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
+
+	"github.com/satori/go.uuid"
 )
+
+func SafeUUID(uuidValue uuid.UUID) string {
+	return strings.Replace(uuidValue.String(), "-", "_", -1)
+}
 
 //AdminURL ...
 func AdminURL(path string, args ...interface{}) string {

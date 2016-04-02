@@ -1,8 +1,17 @@
 $recvSync( function ( msg ) {
-  var obj = JSON.parse( msg );
-  var output = {
-    name: obj.firstname + " " + obj.lastname,
-    age: obj.age
-  };
-  return JSON.stringify( output );
+    try{
+        var obj = JSON.parse( msg );
+
+        if(obj.command == 'transform') {
+            return transform(obj);
+        }
+    }catch(err){
+        $print(err);
+        return "{'error':'transformation error occurred'}"
+    }
 } );
+
+function transform(obj){
+  var output = this['transform_'+obj.id](obj.data)
+  return JSON.stringify( output );
+}

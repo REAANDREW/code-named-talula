@@ -44,10 +44,20 @@ func StartTransformServer() {
 				}
 				defer proxyResponse.Body.Close()
 				proxyResponseBody, err := ioutil.ReadAll(proxyResponse.Body)
+				if err != nil {
+					panic(err)
+				}
 				if V8Worker == nil {
 					panic("Something gone wrong")
 				}
-				result := V8Worker.SendSync(string(proxyResponseBody))
+
+				command := fmt.Sprintf(`{
+          "command" : "transform",
+          "id" : "%s",
+          "data" : %s
+        }`, SafeUUID(endpoint.ID), string(proxyResponseBody))
+
+				result := V8Worker.SendSync(command)
 				fmt.Println(result)
 				c.Data(proxyResponse.StatusCode, proxyResponse.Header.Get("Content-Type"), []byte(result))
 			}
