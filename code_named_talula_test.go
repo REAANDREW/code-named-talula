@@ -40,11 +40,11 @@ var _ = Describe("JSON Transform", func() {
     }`, Host, TestServerPort))
 
 		CreateResponseTransform(client, `function transform(body){
-				      return {
-				        name : body.firstname + " " + body.lastname,
-				        age : body.age
-				      }
-				    }`, endpointAPIResponse.Links)
+      return {
+        name : body.firstname + " " + body.lastname,
+        age : body.age
+      }
+    }`, endpointAPIResponse.Links)
 
 		jsonResponse, err := GetJSON(client, TransformURL("/people"))
 		Expect(err).To(BeNil())
